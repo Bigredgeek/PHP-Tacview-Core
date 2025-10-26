@@ -1,0 +1,392 @@
+body
+{
+	background-color: black;
+	padding: 20px;
+	position: relative;
+}
+
+.header-container
+{
+	position: relative;
+	margin-bottom: 0px;
+	width: 80%;
+	margin-left: auto;
+	margin-right: auto;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 100px;
+}
+
+.logo-link
+{
+	position: absolute;
+	left: 0;
+	top: calc(50% + 35px);
+	transform: translateY(-50%);
+	display: block;
+	flex-shrink: 0;
+}
+
+.logo
+{
+	max-width: 328px;
+	height: auto;
+	display: block;
+	transition: opacity 0.2s;
+	background-color: black;
+	padding: 5px;
+	border-radius: 5px;
+	object-fit: contain;
+}
+
+.logo:hover
+{
+	opacity: 0.8;
+}
+
+.header-container h1
+{
+	margin: 0;
+	text-align: center;
+}
+
+table
+{
+	font: 11px geneva,verdana,arial,sans-serif;
+	background-color: white;
+	color: black;
+	border-collapse: collapse;
+	text-align: center;
+	vertical-align: middle;
+	width: 80%;
+	margin: 20px auto;
+}
+
+h1
+{
+	color: white;
+	font-size: 24px;
+	font-weight: 700;
+	margin-bottom: 10px;
+	margin-top: 0;
+	text-align: center;
+}
+
+h2
+{
+	color: white;
+	font-size: 20px;
+	font-weight: 700;
+	margin-bottom: 10px;
+	margin-top: 0px;
+	text-align: center;
+}
+
+body > p
+{
+	color: white;
+	text-align: center;
+	margin: 0px 0;
+	font-size: 14px;
+}
+
+td, th
+{
+	border: 1px solid black;
+	padding: 5px;
+	border-collapse: collapse;
+}
+
+p
+{
+	margin: 1px;
+}
+
+a:hover
+{
+	color: black;
+}
+
+span
+{
+	font-weight: 700;
+	display:inline-block;
+	margin-top: 10px;
+
+}
+
+/* PRESENTATION TABLE */
+
+table.presentationTable
+{
+	width: 25%;
+}
+
+td.presentationTable:nth-child(1)
+{
+	text-transform: uppercase;
+	font-weight: bold;
+	text-align: right;
+	background-color: #ECECEC;
+}
+
+td.presentationTable:nth-child(2)
+{
+	text-align: left;
+}
+
+/* STATISTICS TABLE */
+
+tr.statisticsTable, th.statisticsTable
+{
+	height: 50px;
+}
+
+tr.statisticsTable:nth-child(4n)
+{
+	background-color: #ECECEC;
+}
+
+td.statisticsTable:nth-child(n + 4)
+{
+	width: 5%;
+}
+
+th.statisticsTable
+{
+	background-color: #ECECEC;
+	text-transform: uppercase;
+}
+
+td.statisticsTable:nth-child(2)
+{
+	border-right: none;
+}
+
+td.statisticsTable:nth-child(3)
+{
+	border-left: none;
+}
+
+img.statisticsTable
+{
+	max-width: 50px;
+	border-radius: 4px;
+}
+
+/* HIDDEN STATISTICS TABLE */
+
+img.hiddenStatsTable
+{
+	max-width: 200px;
+	border-radius: 16px;
+}
+
+td.hiddenStatsTable
+{
+	padding: 20px;
+}
+
+td.hiddenStatsTableRow2
+{
+	width: 33%;
+}
+
+
+table.hiddenStatsTable
+{
+	margin-bottom: 25px;
+}
+
+/* HIDDEN EVENTS TABLE */
+
+table.hiddenEventsTable
+{
+	margin-bottom: 25px;
+}
+
+h1.hiddenEventsTable
+{
+	color: black;
+}
+
+table.hiddenEventsTable tr:nth-child(n)
+{
+	background-color: white;
+}
+
+table.hiddenEventsTable tr td:nth-child(3n)
+{
+	text-align: left;
+}
+
+/* EVENTS TABLE */
+
+td.eventsTable
+{
+	vertical-align: middle;
+}
+
+table.eventsTable tr td:nth-child(3n)
+{
+	text-align: left;
+}
+
+.ptv_other, .ptv_rowNeutral
+{
+	background-color: #D3f8d3;
+}
+
+.ptv_rowAllies
+{
+	background-color: #F9D8D6;
+}
+
+.ptv_rowEnemies
+{
+	background-color: #CBE4F9;
+}
+
+.ptv_rowHit
+{
+	background-color: #fffee0
+}
+
+.ptv_rowTeamKill
+{
+	background-color: #ffd7b5;
+}
+
+.ptv_rowDestroy
+{
+	background-color: #d3d3d3;
+}
+
+/* RESPONSIVE DESIGN - MOBILE & TABLET */
+
+/* Mobile devices (up to 768px) */
+@media screen and (max-width: 768px) {
+	body {
+		padding: 10px;
+	}
+	
+	.header-container {
+		width: 95%;
+		flex-direction: column;
+		min-height: auto;
+		margin-bottom: 20px;
+	}
+	
+	.logo-link {
+		position: static;
+		transform: none;
+		margin-bottom: 15px;
+	}
+	
+	.logo {
+		max-width: 180px;
+		margin: 0 auto;
+	}
+	
+	h1 {
+		font-size: 20px;
+	}
+	
+	h2 {
+		font-size: 18px;
+	}
+	
+	table {
+		width: 100%;
+		font-size: 9px;
+		display: block;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+	
+	table.presentationTable {
+		width: 100%;
+	}
+	
+	td, th {
+		padding: 3px;
+		font-size: 10px;
+	}
+	
+	tr.statisticsTable, th.statisticsTable {
+		height: auto;
+	}
+	
+	img.statisticsTable {
+		max-width: 30px;
+	}
+	
+	img.hiddenStatsTable {
+		max-width: 120px;
+	}
+	
+	td.hiddenStatsTable {
+		padding: 10px;
+	}
+}
+
+/* Tablet devices (769px to 1024px) */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+	body {
+		padding: 15px;
+	}
+	
+	.header-container {
+		width: 90%;
+	}
+	
+	.logo {
+		max-width: 250px;
+	}
+	
+	table {
+		width: 95%;
+		font-size: 10px;
+	}
+	
+	h1 {
+		font-size: 22px;
+	}
+	
+	h2 {
+		font-size: 19px;
+	}
+}
+
+/* Very small devices (up to 480px) */
+@media screen and (max-width: 480px) {
+	.logo {
+		max-width: 140px;
+	}
+	
+	h1 {
+		font-size: 18px;
+	}
+	
+	h2 {
+		font-size: 16px;
+	}
+	
+	table {
+		font-size: 8px;
+	}
+	
+	td, th {
+		padding: 2px;
+		font-size: 9px;
+	}
+	
+	img.statisticsTable {
+		max-width: 25px;
+	}
+	
+	img.hiddenStatsTable {
+		max-width: 100px;
+	}
+}
