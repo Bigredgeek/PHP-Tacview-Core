@@ -22,7 +22,7 @@ Have an idea? Open a discussion or issue with:
 Missing aircraft? We'd love to add it!
 
 **Process:**
-1. Find a high-quality side-view photo (preferably 800x600+)
+1. Find a high-quality top/side-view photo (preferably 800x600+)
 2. Name it: `Aircraft_Name.jpg` (match Tacview naming)
 3. Add to `objectIcons/` folder
 4. Update `data/aircraft_icons_manifest.json` if needed
@@ -36,7 +36,7 @@ Missing aircraft? We'd love to add it!
 - Public domain or properly licensed
 
 ### 4. Add Translations 🌍
-Want to add a new language?
+Want to add a new language or improve an existing one?
 
 1. Copy `languages/tacview_en.php` to `languages/tacview_XX.php` (XX = your language code)
 2. Translate all strings
@@ -262,20 +262,11 @@ Include in your PR:
 4. Your fix
 5. Test cases
 
-## Code Review Process
-
-1. **Automated Checks** - PRs must pass basic checks
-2. **Maintainer Review** - Core maintainers review code
-3. **Community Feedback** - Community can comment
-4. **Approval** - At least one maintainer approval needed
-5. **Merge** - Maintainer merges after approval
-
 ## Community Guidelines
 
 ### Be Respectful
 - Treat everyone with respect
 - Be constructive in feedback
-- Help newcomers
 
 ### Be Patient
 - Maintainers are volunteers
@@ -305,9 +296,3 @@ Thank you for making PHPTacview better! 🚀
 
 ---
 
-## Quick Links
-
-- [Code of Conduct](CODE_OF_CONDUCT.md)
-- [License](LICENSE)
-- [README](README.md)
-- [Quickstart Guide](QUICKSTART.md)
