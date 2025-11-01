@@ -185,6 +185,47 @@ class tacview
 	}
 
 	//
+	// resolve category icon with graceful fallback when specific files are missing
+	//
+	public function resolveCategoryIcon(string $type, string $coalition): string
+	{
+		$basePath = __DIR__ . '/categoryIcons/';
+		$typeKey = str_replace(['/', ' '], ['-', '_'], $type);
+		$coalitionKey = $coalition !== '' ? $coalition : 'Neutral';
+
+		$typeFallbacks = [
+			'Building' => 'Car',
+			'Structure' => 'Car',
+			'Static' => 'Car',
+			'Unknown' => 'Car',
+		];
+
+		$typeCandidates = [$typeKey];
+		if (isset($typeFallbacks[$typeKey])) {
+			$typeCandidates[] = $typeFallbacks[$typeKey];
+		}
+		$typeCandidates[] = 'Car';
+		$typeCandidates = array_unique($typeCandidates);
+
+		$coalitionCandidates = [$coalitionKey];
+		if ($coalitionKey !== 'Neutral') {
+			$coalitionCandidates[] = 'Neutral';
+		}
+		$coalitionCandidates = array_unique($coalitionCandidates);
+
+		foreach ($typeCandidates as $candidateType) {
+			foreach ($coalitionCandidates as $candidateCoalition) {
+				$filename = $candidateType . '_' . $candidateCoalition . '.gif';
+				if (file_exists($basePath . $filename)) {
+					return 'categoryIcons/' . $filename;
+				}
+			}
+		}
+
+		return 'categoryIcons/Car_Neutral.gif';
+	}
+
+	//
 	// Correct aircraft name based on group name for mod aircraft misidentified by DCS
 	//
 	public function correctAircraftName(string $aircraftName, string $groupName): string
@@ -1356,7 +1397,8 @@ class tacview
 
 			default:
 
-				$lImage = '<img src="' . $this->image_path . 'categoryIcons/' . $event["PrimaryObject"]["Type"] . '_' . $event["PrimaryObject"]["Coalition"] . '.gif" alt="" />';
+					$iconPath = $this->resolveCategoryIcon($event["PrimaryObject"]["Type"], $event["PrimaryObject"]["Coalition"]);
+					$lImage = '<img src="' . $this->image_path . $iconPath . '" alt="" />';
 
 				break;
 		}
