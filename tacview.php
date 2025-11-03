@@ -114,6 +114,7 @@ class tacview
 	public mixed $duration = null;
 	public string $image_path = "";
 	public mixed $firephp = null;
+	private bool $hasConfidenceMetrics = false;
 	// we log today’s date as an example. you could log whatever variable you want to
 
 	//
@@ -388,6 +389,52 @@ class tacview
 		}
 	}
 
+	private function registerDisconnect(string $pilot, array $event, array $disconnectInfo): void
+	{
+		$status = $disconnectInfo['status'] ?? null;
+		if ($status === null)
+		{
+			return;
+		}
+
+		if (!isset($this->stats[$pilot]))
+		{
+			$this->stats[$pilot] = [];
+		}
+
+		if (!array_key_exists('DisconnectRefs', $this->stats[$pilot]))
+		{
+			$this->stats[$pilot]['DisconnectRefs'] = [];
+		}
+
+		$reference = $disconnectInfo['reference'] ?? ($event['PrimaryObject']['ID'] ?? null);
+		$referenceKey = $reference !== null ? (string)$reference : 'time-' . (string)($disconnectInfo['time'] ?? $event['Time'] ?? 0);
+		if (in_array($referenceKey, $this->stats[$pilot]['DisconnectRefs'], true))
+		{
+			return;
+		}
+		$this->stats[$pilot]['DisconnectRefs'][] = $referenceKey;
+
+		$timeValue = (float)($disconnectInfo['time'] ?? $event['Time'] ?? 0.0);
+		$label = ($status === 'midair')
+			? 'In-flight disconnect @ ' . $this->displayTime($timeValue)
+			: 'Post-landing disconnect @ ' . $this->displayTime($timeValue);
+
+		if ($status === 'landed' && array_key_exists('delay', $disconnectInfo))
+		{
+			$label .= ' (+' . $this->displayTime((float)$disconnectInfo['delay']) . ' after landing)';
+		}
+
+		$this->increaseStat($this->stats[$pilot], 'Disconnects', 'Count');
+
+		$disconnects = &$this->stats[$pilot]['Disconnects'];
+		if (!is_array($disconnects))
+		{
+			$disconnects = ['Count' => 0];
+		}
+		$this->increaseStat($disconnects, $label);
+	}
+
 	//
 	// Retrieve stats count (safe)
 	//
@@ -415,22 +462,40 @@ class tacview
 	//
 	public function proceedStats(string $aFile, string $aMissionName): void
 	{
-		$this->htmlOutput  = "";
-		$this->objects     = [];
-		$this->events      = [];
-		$this->stats       = [];
-
-		// parse XML file to get events and objects
-
+		$this->resetRuntimeState();
 		$this->parseXML($aFile);
 
-		// echo '============================================================================';
-		// echo '<pre>'; print_r($this->events); echo '</pre>';
-		// echo '============================================================================';
-
-		if ($this->missionName == "")
+		if ($this->missionName === "")
 		{
 			$this->missionName = $aMissionName;
+		}
+
+		$this->renderPreparedEventsFromState();
+	}
+
+	public function proceedAggregatedStats(string $missionName, float $startTime, float $duration, array $events): void
+	{
+		$this->resetRuntimeState();
+		$this->missionName = $missionName;
+		$this->startTime = $startTime;
+		$this->duration = $duration;
+		$this->events = $events;
+
+		$this->renderPreparedEventsFromState();
+	}
+
+	private function renderPreparedEventsFromState(): void
+	{
+		$this->htmlOutput  = "";
+		$this->objects     = $this->objects ?? [];
+		$this->events      = $this->normalizeEventArray($this->events);
+		$this->hasConfidenceMetrics = $this->detectConfidenceMetrics($this->events);
+		$this->stats       = [];
+		$this->weaponOwners = [];
+
+		if ($this->missionName === "")
+		{
+			$this->missionName = 'Tacview Combined Debrief';
 		}
 
 		// some scripts
@@ -561,6 +626,18 @@ class tacview
 
 				// fine creazione ramo
 
+				$graphLinks = $event["GraphLinks"] ?? [];
+				if (isset($graphLinks['disconnectStatus']) && is_array($graphLinks['disconnectStatus']))
+				{
+					$disconnectLink = $graphLinks['disconnectStatus'];
+					$status = $disconnectLink['status'] ?? null;
+					$role = $disconnectLink['role'] ?? null;
+					if ($status === 'landed' && ($role === null || $role === 'landing'))
+					{
+						$this->registerDisconnect($primaryObjectPilot, $event, $disconnectLink);
+					}
+				}
+
 				switch ($event["Action"])
 				{
 					case "HasLanded":
@@ -661,7 +738,9 @@ class tacview
 						}
 					}
 
-					break;					case "HasBeenDestroyed":
+					break;
+
+				case "HasBeenDestroyed":
 
 						// Ensure pilot entry exists for HasBeenDestroyed events - this can be the first event for a pilot
 						if (!isset($this->stats[$primaryObjectPilot]))
@@ -676,6 +755,26 @@ class tacview
 								$this->stats[$primaryObjectPilot]["Events"] = [];
 							}
 						}
+
+					$shouldSkipKillAttribution = false;
+
+					if (isset($graphLinks['disconnectStatus']) && is_array($graphLinks['disconnectStatus']))
+					{
+						$disconnectDescriptor = $graphLinks['disconnectStatus'];
+						$status = $disconnectDescriptor['status'] ?? null;
+						$role = $disconnectDescriptor['role'] ?? null;
+
+						if ($status === 'midair' && ($role === null || $role === 'destruction'))
+						{
+							$this->registerDisconnect($primaryObjectPilot, $event, $disconnectDescriptor);
+							$shouldSkipKillAttribution = true;
+						}
+					}
+
+					if ($shouldSkipKillAttribution)
+					{
+						break;
+					}
 
 					$this->increaseStat($this->stats[$primaryObjectPilot], "Destroyed", "Count");
 					
@@ -934,6 +1033,7 @@ class tacview
 		$this->addOutput('<th class="statisticsTable">' . $this->L('group') . '</th>');
 		$this->addOutput('<th class="statisticsTable">' . $this->L('takeoff') . '</th>');
 		$this->addOutput('<th class="statisticsTable">' . $this->L('landing') . '</th>');
+		$this->addOutput('<th class="statisticsTable">' . $this->L('disconnects') . '</th>');
 		$this->addOutput('<th class="statisticsTable">' . $this->L('firedArmement') . '</th>');
 		$this->addOutput('<th class="statisticsTable">' . $this->L('killedAircraft') . '</th>');
 		$this->addOutput('<th class="statisticsTable">' . $this->L('killedHelo') . '</th>');
@@ -978,6 +1078,7 @@ class tacview
 
 				$this->addOutput('<td class="statisticsTable">' . $this->getStat($stat, "TakeOffs") . '</td>');
 				$this->addOutput('<td class="statisticsTable">' . $this->getStat($stat, "Lands") . '</td>');
+				$this->addOutput('<td class="statisticsTable">' . $this->getStat($stat, "Disconnects") . '</td>');
 				$this->addOutput('<td class="statisticsTable">' . $this->getStat($stat, "Fired") . '</td>');
 				$this->addOutput('<td class="statisticsTable">' . $this->getStat($stat, "Killed", "Aircraft") . '</td>');
 				$this->addOutput('<td class="statisticsTable">' . $this->getStat($stat, "Killed", "Helicopter") . '</td>');
@@ -995,7 +1096,7 @@ class tacview
 			// ***********************************************************
 
 				$this->addOutput('<tr id="'.$key.'" class="hiddenRow" style="display: none;">');
-				$this->addOutput('<td class="hiddenRow" colspan="16">');
+				$this->addOutput('<td class="hiddenRow" colspan="17">');
 				$this->addOutput('<h2>' . $key . '</h2>');
 
 				$this->addOutput('<table class="hiddenStatsTable">');
@@ -1127,6 +1228,26 @@ class tacview
 				}
 
 				if (!isset($stat["Hit"]) or $stat["Hit"]["Count"] == "")
+				{
+					$this->addOutput('<p>(' . $this->L("nothing") . ')</p>');
+				}
+
+				// Disconnects
+
+				$this->addOutput('<span>' . $this->L("disconnects") . ' :</span>');
+
+				if (isset($stat["Disconnects"]) and is_array($stat["Disconnects"]))
+				{
+					foreach ($stat["Disconnects"] as $label => $count)
+					{
+						if ($label !== "Count")
+						{
+							$this->addOutput('<p>&nbsp;' . $label . ' (' . $count . ')</p>');
+						}
+					}
+				}
+
+				if (!isset($stat["Disconnects"]) or $stat["Disconnects"]["Count"] == "")
 				{
 					$this->addOutput('<p>(' . $this->L("nothing") . ')</p>');
 				}
@@ -1299,6 +1420,11 @@ class tacview
 				$this->addOutput('<th>' . $this->L('time') . '</th>');
 				$this->addOutput('<th>' . $this->L('type') . '</th>');
 				$this->addOutput('<th>' . $this->L('action') . '</th>');
+				if ($this->hasConfidenceMetrics)
+				{
+					$this->addOutput('<th>' . $this->L('confidence') . '</th>');
+					$this->addOutput('<th>' . $this->L('sources') . '</th>');
+				}
 				$this->addOutput('</tr>');
 
 				foreach ($stat["Events"] as $key => $event)
@@ -1331,6 +1457,11 @@ class tacview
 		$this->addOutput('<th>' . $this->L('time') . '</th>');
 		$this->addOutput('<th>' . $this->L('type') . '</th>');
 		$this->addOutput('<th>' . $this->L('action') . '</th>');
+		if ($this->hasConfidenceMetrics)
+		{
+			$this->addOutput('<th>' . $this->L('confidence') . '</th>');
+			$this->addOutput('<th>' . $this->L('sources') . '</th>');
+		}
 		$this->addOutput('</tr>');
 
 		foreach ($this->events as $key => $event)
@@ -1566,6 +1697,11 @@ class tacview
 		}
 
 		$this->addOutput('</td>');
+
+			if ($this->hasConfidenceMetrics)
+			{
+				$this->renderEventConfidenceCells($event);
+			}
 		$this->addOutput('</tr>');
 	}
 
@@ -1694,6 +1830,286 @@ class tacview
 				}
 			}
 		}
+	}
+
+	private function resetRuntimeState(): void
+	{
+		$this->htmlOutput = "";
+		$this->airport = [];
+		$this->tagAirportOpened = false;
+		$this->airportCurrentId = 0;
+		$this->primaryObjects = [];
+		$this->tagPrimaryObjectOpened = false;
+		$this->primaryObjectCurrentId = 0;
+		$this->secondaryObjects = [];
+		$this->tagSecondaryObjectOpened = false;
+		$this->secondaryObjectCurrentId = 0;
+		$this->parentObjects = [];
+		$this->tagParentObjectOpened = false;
+		$this->parentObjectCurrentId = 0;
+		$this->objects = [];
+		$this->tagObjectOpened = false;
+		$this->objectCurrentId = 0;
+		$this->events = [];
+		$this->tagEventOpened = false;
+		$this->eventCurrentId = 0;
+		$this->stats = [];
+		$this->weaponOwners = [];
+		$this->missionName = "";
+		$this->xmlParser = null;
+		$this->currentData = "";
+		$this->tagObjectsOpened = false;
+		$this->tagEventsOpened = false;
+		$this->sam_enemies = [];
+		$this->tagOpened = "";
+		$this->startTime = 0.0;
+		$this->duration = 0.0;
+		$this->hasConfidenceMetrics = false;
+	}
+
+	/**
+	 * @param array<int, array<string, mixed>> $events
+	 */
+	private function detectConfidenceMetrics(array $events): bool
+	{
+		foreach ($events as $event)
+		{
+			if (!is_array($event))
+			{
+				continue;
+			}
+
+			if (array_key_exists('Confidence', $event) || array_key_exists('Evidence', $event))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private function renderEventConfidenceCells(array $event): void
+	{
+		$confidenceValue = null;
+		if (array_key_exists('Confidence', $event) && is_numeric($event['Confidence']))
+		{
+			$confidenceValue = (float)$event['Confidence'];
+		}
+
+		$confidencePercent = $this->toConfidencePercent($confidenceValue);
+		$confidenceLabel = $confidencePercent === null
+			? '&mdash;'
+			: sprintf('%d%%', (int)round($confidencePercent));
+
+		$confidenceTooltip = $this->buildConfidenceTooltip($event);
+		$confidenceAttributes = $confidenceTooltip !== ''
+			? ' title="' . htmlspecialchars($confidenceTooltip, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"'
+			: '';
+
+		$this->addOutput('<td class="eventsConfidence"><span' . $confidenceAttributes . '>' . $confidenceLabel . '</span></td>');
+
+		[$sourcesLabel, $sourcesTooltip] = $this->formatEventSourcesBadge($event);
+		$sourcesAttributes = $sourcesTooltip !== ''
+			? ' title="' . htmlspecialchars($sourcesTooltip, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"'
+			: '';
+
+		$this->addOutput('<td class="eventsEvidence"><span' . $sourcesAttributes . '>' . $sourcesLabel . '</span></td>');
+	}
+
+	private function buildConfidenceTooltip(array $event): string
+	{
+		$parts = [];
+		$confidencePercent = null;
+
+		if (array_key_exists('Confidence', $event) && is_numeric($event['Confidence']))
+		{
+			$confidencePercent = $this->toConfidencePercent((float)$event['Confidence']);
+		}
+
+		if ($confidencePercent !== null)
+		{
+			$parts[] = sprintf('%0.1f%%%% overall confidence', $confidencePercent);
+		}
+
+		$breakdown = $event['ConfidenceBreakdown'] ?? null;
+		if (is_array($breakdown))
+		{
+			if (isset($breakdown['tierCounts']) && is_array($breakdown['tierCounts']))
+			{
+				$tierCounts = [];
+				foreach (['A', 'B', 'C'] as $tier)
+				{
+					$count = (int)($breakdown['tierCounts'][$tier] ?? 0);
+					$tierCounts[] = sprintf('Tier %s: %d', $tier, $count);
+				}
+				$parts[] = implode(', ', $tierCounts);
+			}
+
+			if (isset($breakdown['coalitions']) && is_array($breakdown['coalitions']))
+			{
+				$coalitionParts = [];
+				foreach ($breakdown['coalitions'] as $coalition => $count)
+				{
+					$coalitionParts[] = sprintf('%s: %d', (string)$coalition, (int)$count);
+				}
+				if ($coalitionParts !== [])
+				{
+					$parts[] = 'Coalition evidence ' . implode(', ', $coalitionParts);
+				}
+			}
+
+			if (isset($breakdown['graphAdjustment']) && (float)$breakdown['graphAdjustment'] !== 0.0)
+			{
+				$parts[] = 'Graph adjustment ' . sprintf('%+0.2f', (float)$breakdown['graphAdjustment']);
+			}
+		}
+
+		return implode(' | ', array_filter($parts));
+	}
+
+	/**
+	 * @return array{0:string,1:string}
+	 */
+	private function formatEventSourcesBadge(array $event): array
+	{
+		$evidence = $event['Evidence'] ?? null;
+		if (!is_array($evidence) || $evidence === [])
+		{
+			return ['N/A', ''];
+		}
+
+		$detailRank = ['A' => 1, 'B' => 2, 'C' => 3];
+		$sourceSummaries = [];
+
+		foreach ($evidence as $sample)
+		{
+			if (!is_array($sample))
+			{
+				continue;
+			}
+
+			$sourceId = (string)($sample['sourceId'] ?? 'unknown');
+			$tier = strtoupper((string)($sample['detailTier'] ?? 'C'));
+			$confidence = isset($sample['confidence']) && is_numeric($sample['confidence'])
+				? (float)$sample['confidence']
+				: null;
+
+			if (!isset($sourceSummaries[$sourceId]))
+			{
+				$sourceSummaries[$sourceId] = [
+					'tier' => $tier,
+					'confidence' => $confidence,
+				];
+				continue;
+			}
+
+			$currentTier = $sourceSummaries[$sourceId]['tier'];
+			$currentRank = $detailRank[$currentTier] ?? 3;
+			$newRank = $detailRank[$tier] ?? 3;
+			if ($newRank < $currentRank)
+			{
+				$sourceSummaries[$sourceId]['tier'] = $tier;
+			}
+			if ($confidence !== null)
+			{
+				$sourceSummaries[$sourceId]['confidence'] = $confidence;
+			}
+		}
+
+		$label = (string)count($sourceSummaries);
+		$lines = [];
+		foreach ($sourceSummaries as $id => $summary)
+		{
+			$line = $id . ' • Tier ' . $summary['tier'];
+			if ($summary['confidence'] !== null)
+			{
+				$percent = $this->toConfidencePercent($summary['confidence']);
+				if ($percent !== null)
+				{
+					$line .= ' • ' . sprintf('%0.1f%%', $percent);
+				}
+			}
+			$lines[] = $line;
+		}
+
+		return [$label, implode("\n", $lines)];
+	}
+
+	private function toConfidencePercent(?float $confidence): ?float
+	{
+		if ($confidence === null)
+		{
+			return null;
+		}
+
+		$percent = $confidence * 100.0;
+		if ($percent < 0.0)
+		{
+			$percent = 0.0;
+		}
+		if ($percent > 100.0)
+		{
+			$percent = 100.0;
+		}
+
+		return $percent;
+	}
+
+	/**
+	 * @param array<int|string, mixed> $events
+	 * @return list<array<string, mixed>>
+	 */
+	private function normalizeEventArray(array $events): array
+	{
+		if ($events === [])
+		{
+			return [];
+		}
+
+		$normalized = [];
+
+		foreach ($events as $event)
+		{
+			if (!is_array($event))
+			{
+				continue;
+			}
+
+			if (!isset($event['PrimaryObject']) || !is_array($event['PrimaryObject']))
+			{
+				continue;
+			}
+
+			if (isset($event['SecondaryObject']) && !is_array($event['SecondaryObject']))
+			{
+				$event['SecondaryObject'] = [];
+			}
+
+			if (isset($event['ParentObject']) && !is_array($event['ParentObject']))
+			{
+				$event['ParentObject'] = [];
+			}
+
+			if (isset($event['Time']))
+			{
+				$event['Time'] = (float)$event['Time'];
+			}
+
+			$normalized[] = $event;
+		}
+
+		usort(
+			$normalized,
+			static function (array $left, array $right): int
+			{
+				$leftTime = $left['Time'] ?? 0.0;
+				$rightTime = $right['Time'] ?? 0.0;
+
+				return $leftTime <=> $rightTime;
+			}
+		);
+
+		return array_values($normalized);
 	}
 
 	public function cdata(mixed $aParser, string $aData): void
