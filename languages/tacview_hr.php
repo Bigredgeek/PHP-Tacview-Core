@@ -29,6 +29,7 @@ declare(strict_types=1);
 	$_LANGUAGE['takeoff_long'] = 'Polijetanje';
 	$_LANGUAGE['landing'] = 'Slijet';
 	$_LANGUAGE['landing_long'] = 'Slijetanje';
+	$_LANGUAGE['disconnects'] = 'Prekidi veze';
 	$_LANGUAGE['aircraft'] = 'Zrakoplov';
 	$_LANGUAGE['pilotName'] = 'Pilot';
 	$_LANGUAGE['firedArmement'] = 'Ispaljeno';
@@ -48,4 +49,6 @@ declare(strict_types=1);
 	$_LANGUAGE['ObjectBullet'] = 'bullet';
 	$_LANGUAGE['group'] = 'Group';
 	$_LANGUAGE['model'] = 'Model';
+	$_LANGUAGE['confidence'] = 'Pouzdanost';
+	$_LANGUAGE['sources'] = 'Izvori';
 ?>

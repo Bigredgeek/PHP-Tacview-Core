@@ -28,6 +28,7 @@ declare(strict_types=1);
 	$_LANGUAGE['takeoff'] = 'Decolli';
 	$_LANGUAGE['takeoff_long'] = 'Decollato da';
 	$_LANGUAGE['landing'] = 'Atterraggi';
+	$_LANGUAGE['disconnects'] = 'Disconnessioni';
 	$_LANGUAGE['landing_long'] = 'Atterrato a';
 	$_LANGUAGE['aircraft'] = 'Velivolo';
 	$_LANGUAGE['pilotName'] = 'Nome del pilota';
@@ -48,5 +49,7 @@ declare(strict_types=1);
 	$_LANGUAGE['ObjectBullet'] = 'proiettile';
 	$_LANGUAGE['group'] = 'Gruppo'; // ADDED by Aikanaro
 	$_LANGUAGE['model'] = 'Modello'; // ADDED by Aikanaro
+	$_LANGUAGE['confidence'] = 'Affidabilità';
+	$_LANGUAGE['sources'] = 'Fonti';
 
 ?>

@@ -624,7 +624,7 @@ table.hiddenEventsTable tr:nth-child(n)
 	background: rgba(255, 255, 255, 0.98);
 }
 
-table.hiddenEventsTable tr td:nth-child(3n)
+table.hiddenEventsTable tr td:nth-child(3)
 {
 	text-align: left;
 }
@@ -637,9 +637,36 @@ td.eventsTable
 	font-size: 18px;
 }
 
-table.eventsTable tr td:nth-child(3n)
+table.eventsTable tr td:nth-child(3)
 {
 	text-align: left;
+}
+
+td.eventsConfidence,
+td.eventsEvidence
+{
+	text-align: center;
+	font-size: 16px;
+	white-space: nowrap;
+}
+
+td.eventsEvidence span
+{
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 12px;
+	background: rgba(0, 245, 255, 0.12);
+	border: 1px solid rgba(0, 245, 255, 0.4);
+	color: #0d0221;
+	font-weight: 600;
+}
+
+table.hiddenEventsTable th:nth-child(4),
+table.hiddenEventsTable th:nth-child(5),
+table.eventsTable th:nth-child(4),
+table.eventsTable th:nth-child(5)
+{
+	text-align: center;
 }
 
 .ptv_other, .ptv_rowNeutral

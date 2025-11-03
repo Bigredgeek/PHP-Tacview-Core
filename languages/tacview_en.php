@@ -29,6 +29,7 @@ declare(strict_types=1);
 	$_LANGUAGE['takeoff_long'] = 'Sorties Flown';
 	$_LANGUAGE['landing'] = 'Landings';
 	$_LANGUAGE['landing_long'] = 'Successful Landings';
+	$_LANGUAGE['disconnects'] = 'Disconnects';
 	$_LANGUAGE['aircraft'] = 'Aircraft';
 	$_LANGUAGE['pilotName'] = 'Aircrew';
 	$_LANGUAGE['firedArmement'] = 'Weapons Fired';
@@ -48,5 +49,7 @@ declare(strict_types=1);
 	$_LANGUAGE['ObjectBullet'] = 'Small Arms Fire';
 	$_LANGUAGE['model'] = 'Aircraft Model';
 	$_LANGUAGE['group'] = 'Flight/Squadron';
+	$_LANGUAGE['confidence'] = 'Confidence';
+	$_LANGUAGE['sources'] = 'Sources';
 
 ?>

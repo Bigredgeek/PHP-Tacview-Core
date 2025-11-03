@@ -29,6 +29,7 @@ declare(strict_types=1);
 	$_LANGUAGE['takeoff_long'] = 'Despege';
 	$_LANGUAGE['landing'] = 'Ate.';
 	$_LANGUAGE['landing_long'] = 'Aterrizaje';
+	$_LANGUAGE['disconnects'] = 'Desconexiones';
 	$_LANGUAGE['aircraft'] = 'Aparato';
 	$_LANGUAGE['pilotName'] = 'Piloto';
 	$_LANGUAGE['firedArmement'] = 'Arm. disparado';
@@ -48,5 +49,7 @@ declare(strict_types=1);
 	$_LANGUAGE['ObjectBullet'] = 'bullet';
 	$_LANGUAGE['group'] = 'Group';
 	$_LANGUAGE['model'] = 'Model';
+	$_LANGUAGE['confidence'] = 'Confianza';
+	$_LANGUAGE['sources'] = 'Fuentes';
 
 ?>

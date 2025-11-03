@@ -29,6 +29,7 @@ declare(strict_types=1);
 	$_LANGUAGE['takeoff_long'] = 'Злетів';
 	$_LANGUAGE['landing'] = 'Посадка';
 	$_LANGUAGE['landing_long'] = 'Приземлився';
+	$_LANGUAGE['disconnects'] = 'Відключення';
 	$_LANGUAGE['aircraft'] = 'Літак';
 	$_LANGUAGE['pilotName'] = 'Льотчик';
 	$_LANGUAGE['firedArmement'] = 'Озброєння випущено';
@@ -48,5 +49,7 @@ declare(strict_types=1);
 	$_LANGUAGE['ObjectBullet'] = 'Куля';
 	$_LANGUAGE['group'] = 'Група';
 	$_LANGUAGE['model'] = 'Модель';
+	$_LANGUAGE['confidence'] = 'Достовірність';
+	$_LANGUAGE['sources'] = 'Джерела';
 
 ?>

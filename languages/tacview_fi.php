@@ -30,6 +30,7 @@ declare(strict_types=1);
 	$_LANGUAGE['landing'] = 'Laskeutuminen';
 	$_LANGUAGE['landing_long'] = 'Laskeutunut';
 	$_LANGUAGE['aircraft'] = 'Ilma-alus';
+	$_LANGUAGE['disconnects'] = 'Yhteyskatkot';
 	$_LANGUAGE['pilotName'] = 'Lentäjä';
 	$_LANGUAGE['firedArmement'] = 'Ammutut aseet';
 	$_LANGUAGE['firedArmement_long'] = 'Ammutut aseet';
@@ -48,5 +49,7 @@ declare(strict_types=1);
 	$_LANGUAGE['ObjectBullet'] = 'Luoti';
 	$_LANGUAGE['group'] = 'Ryhmä';
 	$_LANGUAGE['model'] = 'Malli';
+	$_LANGUAGE['confidence'] = 'Luottamusaste';
+	$_LANGUAGE['sources'] = 'Lähteet';
 
 ?>
