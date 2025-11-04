@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed - 2025-11-03
+- Suppressed duplicate mission log rows for pilots that performed takeoff/landing cycles under two minutes with no intervening actions by introducing `deduplicateShortFlightSegments()` and matching airport checks during event normalization.
+
+### Changed - 2025-11-03
+- Renamed the pilot statistics "Targets Destroyed" column to "Airframes Lost" and synced the wording across English, Russian, and Ukrainian language packs so airframe loss totals read consistently in every UI bundle.
+
 ### Added - 2025-11-02
 - Introduced `disconnects`, `confidence`, and `sources` strings across all localized language packs so the new mission statistics columns render with translated labels.
 
