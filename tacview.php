@@ -416,9 +416,11 @@ class tacview
 		$this->stats[$pilot]['DisconnectRefs'][] = $referenceKey;
 
 		$timeValue = (float)($disconnectInfo['time'] ?? $event['Time'] ?? 0.0);
+		$missionStart = is_numeric($this->startTime) ? (float)$this->startTime : 0.0;
+		$absoluteTime = $missionStart + $timeValue;
 		$label = ($status === 'midair')
-			? 'In-flight disconnect @ ' . $this->displayTime($timeValue)
-			: 'Post-landing disconnect @ ' . $this->displayTime($timeValue);
+			? 'In-flight disconnect @ ' . $this->displayTime($absoluteTime)
+			: 'Post-landing disconnect @ ' . $this->displayTime($absoluteTime);
 
 		if ($status === 'landed' && array_key_exists('delay', $disconnectInfo))
 		{

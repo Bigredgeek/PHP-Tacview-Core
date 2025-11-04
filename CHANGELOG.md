@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed - 2025-11-02
 - Styled the mission timeline confidence and source columns with centered alignment and pill badges to keep the numeric-only evidence counts legible.
+- Offset disconnect annotations by the mission start time so per-pilot disconnect summaries display the aligned timeline values.
 
 ### Added - 2025-10-31
 - Added `resolveCategoryIcon()` to provide coalition-aware fallbacks for missing building sprites when rendering Tacview event logs.
