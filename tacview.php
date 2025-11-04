@@ -880,8 +880,8 @@ class tacview
 							}
 						}
 
-						$this->increaseStat($this->stats[$primaryObjectPilot], "Hit", "Count");
-						$this->increaseStat($this->stats[$primaryObjectPilot], "Hit", $event["SecondaryObject"]["Name"]);
+						$this->increaseStat($this->stats[$primaryObjectPilot], "HitBy", "Count");
+						$this->increaseStat($this->stats[$primaryObjectPilot], "HitBy", $event["SecondaryObject"]["Name"]);
 
 						if 	(	array_key_exists("ParentObject",$event) and
 								array_key_exists("Pilot", $event["ParentObject"])
@@ -904,6 +904,9 @@ class tacview
 								}
 							}
 													
+							$this->increaseStat($this->stats[$parentObjectPilot], "Hit", "Count");
+							$this->increaseStat($this->stats[$parentObjectPilot], "Hit", $event["PrimaryObject"]["Name"]);
+
 							array_push($this->stats[$parentObjectPilot]["Events"], $event);
 						}
 						else
@@ -1043,6 +1046,7 @@ class tacview
 		$this->addOutput('<th class="statisticsTable">' . $this->L('killedCar') . '</th>');
 		$this->addOutput('<th class="statisticsTable">' . $this->L('teamKill') . '</th>');
 		$this->addOutput('<th class="statisticsTable">' . $this->L('hit') . '</th>');
+		$this->addOutput('<th class="statisticsTable">' . $this->L('hitTaken') . '</th>');
 		$this->addOutput('<th class="statisticsTable">' . $this->L('destroyed') . '</th>');
 		$this->addOutput('</tr>');
 
@@ -1088,6 +1092,7 @@ class tacview
 				$this->addOutput('<td class="statisticsTable">' . $this->getStat($stat, "Killed", "Car") . '</td>');
 				$this->addOutput('<td class="statisticsTable">' . $this->getStat($stat, "FriendlyFire") . '</td>');
 				$this->addOutput('<td class="statisticsTable">' . $this->getStat($stat, "Hit") . '</td>');
+				$this->addOutput('<td class="statisticsTable">' . $this->getStat($stat, "HitBy") . '</td>');
 				$this->addOutput('<td class="statisticsTable">' . $this->getStat($stat, "Destroyed") . '</td>');
 				$this->addOutput('</tr>');
 
@@ -1212,9 +1217,9 @@ class tacview
 					$this->addOutput('<p>(' . $this->L("nothing") . ')</p>');
 				}
 
-				// Hit by
+				// Targets Hit
 
-				$this->addOutput('<span>' . $this->L("hitBy") . ' :</span>');
+				$this->addOutput('<span>' . $this->L("hit") . ' :</span>');
 
 				if (isset($stat["Hit"]) and is_array($stat["Hit"]))
 				{
@@ -1228,6 +1233,26 @@ class tacview
 				}
 
 				if (!isset($stat["Hit"]) or $stat["Hit"]["Count"] == "")
+				{
+					$this->addOutput('<p>(' . $this->L("nothing") . ')</p>');
+				}
+
+				// Hit by
+
+				$this->addOutput('<span>' . $this->L("hitBy") . ' :</span>');
+
+				if (isset($stat["HitBy"]) and is_array($stat["HitBy"]))
+				{
+					foreach ($stat["HitBy"] as $k => $v)
+					{
+						if ($k != "Count")
+						{
+							$this->addOutput('<p>&nbsp;' . $k . ' (' . $v . ')</p>');
+						}
+					}
+				}
+
+				if (!isset($stat["HitBy"]) or $stat["HitBy"]["Count"] == "")
 				{
 					$this->addOutput('<p>(' . $this->L("nothing") . ')</p>');
 				}

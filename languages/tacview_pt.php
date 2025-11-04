@@ -42,6 +42,7 @@ declare(strict_types=1);
 	$_LANGUAGE['killedShip'] = 'Ar-navio destruídos';
 	$_LANGUAGE['teamKill'] = 'Fogo amigo';
 	$_LANGUAGE['hit'] = 'Acerto';
+	$_LANGUAGE['hitTaken'] = 'Vezes atingido';
 	$_LANGUAGE['destroyed'] = 'Destruído';
 	$_LANGUAGE['hitBy'] = 'Atingido por';
 	$_LANGUAGE['nothing'] = 'nada';

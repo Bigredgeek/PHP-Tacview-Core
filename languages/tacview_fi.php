@@ -42,6 +42,7 @@ declare(strict_types=1);
 	$_LANGUAGE['killedShip'] = 'Ilma-laiva tuhoamiset';
 	$_LANGUAGE['teamKill'] = 'Oma tuli';
 	$_LANGUAGE['hit'] = 'Osuma';
+	$_LANGUAGE['hitTaken'] = 'Osumat vastaanotettu';
 	$_LANGUAGE['destroyed'] = 'Tuhottu';
 	$_LANGUAGE['hitBy'] = 'Osunut';
 	$_LANGUAGE['nothing'] = 'ei mitään';

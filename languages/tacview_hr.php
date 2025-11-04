@@ -42,6 +42,7 @@ declare(strict_types=1);
 	$_LANGUAGE['killedShip'] = 'Uništeno Zr/Brod';
 	$_LANGUAGE['teamKill'] = 'Prijateljska paljba';
 	$_LANGUAGE['hit'] = 'Pogođen';
+	$_LANGUAGE['hitTaken'] = 'Primljeni pogoci';
 	$_LANGUAGE['destroyed'] = 'Uništen';
 	$_LANGUAGE['hitBy'] = 'POgođen od';
 	$_LANGUAGE['nothing'] = '-ništa-';

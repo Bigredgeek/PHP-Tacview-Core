@@ -42,6 +42,7 @@ declare(strict_types=1);
 	$_LANGUAGE['killedShip'] = 'Naval Targets Destroyed';
 	$_LANGUAGE['teamKill'] = 'Friendly Fire Incidents';
 	$_LANGUAGE['hit'] = 'Targets Hit';
+	$_LANGUAGE['hitTaken'] = 'Times Hit';
 	$_LANGUAGE['destroyed'] = 'Targets Destroyed';
 	$_LANGUAGE['hitBy'] = 'Hit by';
 	$_LANGUAGE['nothing'] = 'None';
