@@ -69,6 +69,8 @@ declare(strict_types=1);
 
 class tacview
 {
+	private const SHORT_SORTIE_THRESHOLD = 120.0;
+
 	public array $language = [];
 	public string $htmlOutput = "";
 
@@ -491,6 +493,7 @@ class tacview
 		$this->htmlOutput  = "";
 		$this->objects     = $this->objects ?? [];
 		$this->events      = $this->normalizeEventArray($this->events);
+		$this->events      = $this->deduplicateShortFlightSegments($this->events);
 		$this->hasConfidenceMetrics = $this->detectConfidenceMetrics($this->events);
 		$this->stats       = [];
 		$this->weaponOwners = [];
@@ -2080,6 +2083,104 @@ class tacview
 		}
 
 		return $percent;
+	}
+
+	private function deduplicateShortFlightSegments(array $events): array
+	{
+		if ($events === [])
+		{
+			return [];
+		}
+
+		$filtered = [];
+		$pendingTakeoff = [];
+
+		foreach ($events as $event)
+		{
+			if (!is_array($event))
+			{
+				$filtered[] = $event;
+				continue;
+			}
+
+			$pilot = $event['PrimaryObject']['Pilot'] ?? null;
+			$action = $event['Action'] ?? null;
+
+			if ($pilot !== null && isset($pendingTakeoff[$pilot]) && $action !== 'HasLanded' && $action !== 'HasTakenOff' && $action !== 'HasTakeOff')
+			{
+				$pendingTakeoff[$pilot]['hasIntervening'] = true;
+			}
+
+			if ($pilot !== null && ($action === 'HasTakenOff' || $action === 'HasTakeOff'))
+			{
+				$pendingTakeoff[$pilot] = [
+					'index' => count($filtered),
+					'event' => $event,
+					'hasIntervening' => false,
+				];
+				$filtered[] = $event;
+				continue;
+			}
+
+			if ($pilot !== null && $action === 'HasLanded' && isset($pendingTakeoff[$pilot]))
+			{
+				$takeoffState = $pendingTakeoff[$pilot];
+				$takeoffEvent = $takeoffState['event'];
+				$timeDelta = abs((float)($event['Time'] ?? 0.0) - (float)($takeoffEvent['Time'] ?? 0.0));
+				$sameAirport = $this->extractAirportName($event) === $this->extractAirportName($takeoffEvent);
+
+				if ($timeDelta > 0.0 && $timeDelta <= self::SHORT_SORTIE_THRESHOLD && $sameAirport && $takeoffState['hasIntervening'] === false)
+				{
+					$filtered[$takeoffState['index']] = null;
+					unset($pendingTakeoff[$pilot]);
+					continue;
+				}
+
+				unset($pendingTakeoff[$pilot]);
+			}
+
+			$filtered[] = $event;
+		}
+
+		return array_values(
+			array_filter(
+				$filtered,
+				static function ($entry): bool
+				{
+					return $entry !== null;
+				}
+			)
+		);
+	}
+
+	private function extractAirportName(array $event): ?string
+	{
+		$airport = $event['Airport'] ?? null;
+
+		if (is_array($airport))
+		{
+			$name = $airport['Name'] ?? null;
+			if (is_string($name))
+			{
+				$name = trim($name);
+				return $name !== '' ? $name : null;
+			}
+
+			if ($name !== null)
+			{
+				return (string)$name;
+			}
+
+			return null;
+		}
+
+		if (is_string($airport))
+		{
+			$airport = trim($airport);
+			return $airport !== '' ? $airport : null;
+		}
+
+		return null;
 	}
 
 	/**

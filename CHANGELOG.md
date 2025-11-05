@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed - 2025-11-03
 - Renamed the pilot statistics "Targets Destroyed" column to "Airframes Lost" and synced the wording across English, Russian, and Ukrainian language packs so airframe loss totals read consistently in every UI bundle.
 
+### Added - 2025-11-04
+- Added MQ-1 Predator, SA 342L Gazelle, MiG-27K Flogger-J2, and Wing Loong I icon entries (with licensing metadata) to the manifest, normalized their 640x360 thumbnails, and taught the auto-curation script the new airframe aliases to keep automated fetches comprehensive.
+
 ### Added - 2025-11-02
 - Introduced `disconnects`, `confidence`, and `sources` strings across all localized language packs so the new mission statistics columns render with translated labels.
 

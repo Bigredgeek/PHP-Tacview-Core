@@ -480,6 +480,15 @@
       "descriptionPage": "https://en.wikipedia.org/wiki/Bell+AH-1+SuperCobra"
     },
     {
+      "name": "SA 342L Gazelle",
+      "targetFilename": "SA_342L_Gazelle.jpg",
+      "suggestedCategoryUrl": "https://commons.wikimedia.org/wiki/Category:A%C3%A9rospatiale_SA_341/SA_342_Gazelle",
+      "fileUrl": "https://upload.wikimedia.org/wikipedia/commons/0/0a/French_SA341F2_Gazelle_helicopter_in_Saudi_Arabia_during_Operation_Desert_Shield.jpg",
+      "license": "Public domain",
+      "attribution": "Tech. Sgt. H. H. Deffner",
+      "descriptionPage": "https://en.wikipedia.org/wiki/A%C3%A9rospatiale_Gazelle"
+    },
+    {
       "name": "GAZ-66",
       "targetFilename": "GAZ-66.jpg",
       "fileUrl": "https://upload.wikimedia.org/wikipedia/commons/5/57/Red_GAZ-66.jpg",
@@ -606,6 +615,15 @@
       "descriptionPage": "https://en.wikipedia.org/wiki/Mil+Mi-8"
     },
     {
+      "name": "MiG-27K Flogger-J2",
+      "targetFilename": "MiG-27K_Flogger-J2.jpg",
+      "suggestedCategoryUrl": "https://commons.wikimedia.org/wiki/Category:Mikoyan-Gurevich_MiG-27",
+      "fileUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c9/MiG-27K_Kyiv_2019_3.jpg",
+      "license": "CC BY-SA 4.0",
+      "attribution": "VargaA",
+      "descriptionPage": "https://en.wikipedia.org/wiki/Mikoyan_MiG-27"
+    },
+    {
       "name": "MiG-29S Fulcrum-C",
       "targetFilename": "MiG-29S_Fulcrum-C.jpg",
       "fileUrl": "https://upload.wikimedia.org/wikipedia/commons/a/af/VVS_100th_IMG_0691_%287727464290%29_%28cropped%29.jpg",
@@ -652,6 +670,33 @@
       "targetFilename": "Ural-375_ZU-23.jpg",
       "fileUrl": "https://upload.wikimedia.org/wikipedia/commons/5/53/ZU-23-2_in_Saint_Petersburg.jpg",
       "descriptionPage": "https://en.wikipedia.org/wiki/ZU-23-2"
+    },
+    {
+      "name": "MQ-1 Predator",
+      "targetFilename": "MQ-1_Predator.jpg",
+      "suggestedCategoryUrl": "https://commons.wikimedia.org/wiki/Category:General_Atomics_MQ-1_Predator",
+      "fileUrl": "https://upload.wikimedia.org/wikipedia/commons/0/08/MQ-1_Predator_unmanned_aircraft.jpg",
+      "license": "Public domain",
+      "attribution": "U.S. Air Force photo / Lt Col Leslie Pratt",
+      "descriptionPage": "https://en.wikipedia.org/wiki/General_Atomics_MQ-1_Predator"
+    },
+    {
+      "name": "Wing Loong I",
+      "targetFilename": "WingLoong-I.jpg",
+      "suggestedCategoryUrl": "https://commons.wikimedia.org/wiki/Category:Chengdu_Wing_Loong",
+      "fileUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5f/Wing_Loong_I_at_Dubai_Airshow_2017.jpg",
+      "license": "CC BY-SA 4.0",
+      "attribution": "Mztourist",
+      "descriptionPage": "https://en.wikipedia.org/wiki/CAIG_Wing_Loong"
+    },
+    {
+      "name": "UH-60L Black Hawk",
+      "targetFilename": "UH-60L_Black_Hawk.jpg",
+      "suggestedCategoryUrl": "https://commons.wikimedia.org/wiki/Category:UH-60_Black_Hawk",
+      "fileUrl": "https://upload.wikimedia.org/wikipedia/commons/f/fd/U.S._Army%2C_95-26641%2C_UH-60L_Blackhawk_(16270853719).jpg",
+      "license": "CC BY-SA 2.0",
+      "attribution": "Anna Zvereva",
+      "descriptionPage": "https://en.wikipedia.org/wiki/Sikorsky_UH-60_Black_Hawk"
     },
     {
       "name": "OV-10A Bronco",

@@ -121,6 +121,7 @@ $wikiTitleMap = @{
   'MiG-23MLD Flogger-K' = 'Mikoyan-Gurevich MiG-23'
   'MiG-25PD Foxbat-E' = 'Mikoyan-Gurevich MiG-25'
   'MiG-27K Flogger-J' = 'Mikoyan-Gurevich MiG-27'
+  'MiG-27K Flogger-J2' = 'Mikoyan-Gurevich MiG-27'
   'MiG-29 Fulcrum' = 'Mikoyan MiG-29'
   'MiG-29A Fulcrum-A' = 'Mikoyan MiG-29'
   'MiG-29G Fulcrum' = 'Mikoyan MiG-29'
@@ -186,8 +187,10 @@ $wikiTitleMap = @{
   'KC-10A Extender' = 'McDonnell Douglas KC-10 Extender'
   
   # Drones/UAVs
+  'MQ-1 Predator' = 'General Atomics MQ-1 Predator'
   'MQ-9 Reaper' = 'General Atomics MQ-9 Reaper'
   'RQ-1A Predator' = 'General Atomics MQ-1 Predator'
+  'Wing Loong I' = 'CAIG Wing Loong'
   
   # OV-10 Bronco (FAC/attack aircraft)
   'OV-10A Bronco' = 'North American Rockwell OV-10 Bronco'
@@ -236,6 +239,7 @@ $wikiTitleMap = @{
   
   # Helicopters - Other
   'AB212' = 'Bell 212'
+  'SA 342L Gazelle' = 'Aérospatiale Gazelle'
   
   # Additional shorthand variants (not already mapped)
   'C17' = 'Boeing C-17 Globemaster III'
