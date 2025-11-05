@@ -503,46 +503,31 @@ class tacview
 			$this->missionName = 'Tacview Combined Debrief';
 		}
 
-		// some scripts
+		// pilot detail toggles
 
-		$this->addOutput('<script type="text/javascript">');
-		$this->addOutput('function showDetails(zoneAffiche, rowElement){');
-		$this->addOutput('	console.log("showDetails called with ID:", zoneAffiche);');
-		$this->addOutput('	var detailRow = document.getElementById(zoneAffiche);');
-		$this->addOutput('	console.log("detailRow found:", detailRow);');
-		$this->addOutput('	var pilotRow = rowElement || event.currentTarget;');
-		$this->addOutput('	');
-		$this->addOutput('	if(!detailRow){');
-		$this->addOutput('		console.error("Detail row not found for ID:", zoneAffiche);');
-		$this->addOutput('		return false;');
-		$this->addOutput('	}');
-		$this->addOutput('	');
-		$this->addOutput('	// Get computed style to check actual visibility');
-		$this->addOutput('	var computedDisplay = window.getComputedStyle(detailRow).display;');
-		$this->addOutput('	console.log("Computed display:", computedDisplay);');
-		$this->addOutput('	var isHidden = computedDisplay === "none";');
-		$this->addOutput('	console.log("isHidden:", isHidden);');
-		$this->addOutput('	');
-		$this->addOutput('	if(isHidden){');
-		$this->addOutput('		console.log("Showing detail row");');
-		$this->addOutput('		// Hide all other detail rows first');
-		$this->addOutput('		var allDetails = document.querySelectorAll(".hiddenRow");');
-		$this->addOutput('		var allPilotRows = document.querySelectorAll("tr.statisticsTable");');
-		$this->addOutput('		allDetails.forEach(function(row){ row.style.display="none"; });');
-		$this->addOutput('		allPilotRows.forEach(function(row){ row.classList.remove("active-pilot"); });');
-		$this->addOutput('		');
-		$this->addOutput('		// Show this detail row');
-		$this->addOutput('		detailRow.style.display="table-row";');
-		$this->addOutput('		pilotRow.classList.add("active-pilot");');
-		$this->addOutput('	}else{');
-		$this->addOutput('		console.log("Hiding detail row");');
-		$this->addOutput('		// Hide this detail row');
-		$this->addOutput('		detailRow.style.display="none";');
-		$this->addOutput('		pilotRow.classList.remove("active-pilot");');
-		$this->addOutput('	}');
-		$this->addOutput('	return false;');
-		$this->addOutput('}');
-		$this->addOutput('</script>');
+		$this->addOutput('<script type="text/javascript">' . "\n");
+		$this->addOutput('function showDetails(zoneAffiche, rowElement){' . "\n");
+		$this->addOutput('	var detailRow = document.getElementById(zoneAffiche);' . "\n");
+		$this->addOutput('	if(!detailRow){' . "\n");
+		$this->addOutput('		return false;' . "\n");
+		$this->addOutput('	}' . "\n");
+		$this->addOutput('	var pilotRow = rowElement || (typeof event !== "undefined" ? event.currentTarget : null);' . "\n");
+		$this->addOutput('	if(!pilotRow){' . "\n");
+		$this->addOutput('		return false;' . "\n");
+		$this->addOutput('	}' . "\n");
+		$this->addOutput('	var isHidden = window.getComputedStyle(detailRow).display === "none";' . "\n");
+		$this->addOutput('	document.querySelectorAll("tr.hiddenRow").forEach(function(row){ row.style.display="none"; });' . "\n");
+		$this->addOutput('	document.querySelectorAll("tr.statisticsTable").forEach(function(row){ row.classList.remove("active-pilot"); });' . "\n");
+		$this->addOutput('	if(isHidden){' . "\n");
+		$this->addOutput('		detailRow.style.display="table-row";' . "\n");
+		$this->addOutput('		pilotRow.classList.add("active-pilot");' . "\n");
+		$this->addOutput('	}else{' . "\n");
+		$this->addOutput('		detailRow.style.display="none";' . "\n");
+		$this->addOutput('		pilotRow.classList.remove("active-pilot");' . "\n");
+		$this->addOutput('	}' . "\n");
+		$this->addOutput('	return false;' . "\n");
+		$this->addOutput('}' . "\n");
+		$this->addOutput('</script>' . "\n");
 
 		// ***********************************************************
 		// PRESENTATION TABLE - Mission Name, Time, Duration

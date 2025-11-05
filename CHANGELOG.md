@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed - 2025-11-06
+- Restored the compact newline-delimited `showDetails` inline script so consuming projects that embed the shared core no longer ship the verbose debug helper that triggers `Unexpected end of input` errors when Vercel truncates the minified output.
+
 ### Fixed - 2025-11-03
 - Suppressed duplicate mission log rows for pilots that performed takeoff/landing cycles under two minutes with no intervening actions by introducing `deduplicateShortFlightSegments()` and matching airport checks during event normalization.
 
