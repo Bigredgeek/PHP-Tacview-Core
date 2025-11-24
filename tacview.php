@@ -117,6 +117,7 @@ class tacview
 	public string $image_path = "";
 	public mixed $firephp = null;
 	private bool $hasConfidenceMetrics = false;
+	private int $sourceCount = 0;
 	// we log today’s date as an example. you could log whatever variable you want to
 
 	//
@@ -477,13 +478,14 @@ class tacview
 		$this->renderPreparedEventsFromState();
 	}
 
-	public function proceedAggregatedStats(string $missionName, float $startTime, float $duration, array $events): void
+	public function proceedAggregatedStats(string $missionName, float $startTime, float $duration, array $events, int $sourceCount = 0): void
 	{
 		$this->resetRuntimeState();
 		$this->missionName = $missionName;
 		$this->startTime = $startTime;
 		$this->duration = $duration;
 		$this->events = $events;
+		$this->sourceCount = max(0, $sourceCount);
 
 		$this->renderPreparedEventsFromState();
 	}
@@ -547,6 +549,12 @@ class tacview
 		$this->addOutput('<td class="presentationTable">' . $this->L('missionDuration') . ':</td>');
 		$this->addOutput('<td class="presentationTable">' . $this->displayTime($this->duration) . '</td>');
 		$this->addOutput('</tr>');
+		if ($this->sourceCount > 0) {
+			$this->addOutput('<tr class="presentationTable">');
+			$this->addOutput('<td class="presentationTable">' . $this->L('sources') . ':</td>');
+			$this->addOutput('<td class="presentationTable">' . number_format($this->sourceCount) . '</td>');
+			$this->addOutput('</tr>');
+		}
 		$this->addOutput('</table>');
 
 		// ***********************************************************
