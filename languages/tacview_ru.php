@@ -52,5 +52,8 @@ declare(strict_types=1);
 	$_LANGUAGE['model'] = 'Модель';
 	$_LANGUAGE['confidence'] = 'Достоверность';
 	$_LANGUAGE['sources'] = 'Источники';
+	$_LANGUAGE['sourceTimelineHeading'] = 'Mission Timeline';
+	$_LANGUAGE['sourceTimelineBaseline'] = 'Baseline source';
+	$_LANGUAGE['sourceTimelineAligned'] = 'Aligned recording';
 
 ?>

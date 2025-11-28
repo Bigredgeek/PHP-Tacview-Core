@@ -43,7 +43,7 @@ declare(strict_types=1);
 	$_LANGUAGE['teamKill'] = 'Fogo amigo';
 	$_LANGUAGE['hit'] = 'Acerto';
 	$_LANGUAGE['hitTaken'] = 'Vezes atingido';
-	$_LANGUAGE['destroyed'] = 'Destruído';
+	$_LANGUAGE['destroyed'] = 'Aeronaves perdidas';
 	$_LANGUAGE['hitBy'] = 'Atingido por';
 	$_LANGUAGE['nothing'] = 'nada';
 	$_LANGUAGE['ObjectShell'] = 'Projétil';
@@ -52,5 +52,8 @@ declare(strict_types=1);
 	$_LANGUAGE['model'] = 'Modelo';
 	$_LANGUAGE['confidence'] = 'Confiança';
 	$_LANGUAGE['sources'] = 'Fontes';
+	$_LANGUAGE['sourceTimelineHeading'] = 'Mission Timeline';
+	$_LANGUAGE['sourceTimelineBaseline'] = 'Baseline source';
+	$_LANGUAGE['sourceTimelineAligned'] = 'Aligned recording';
 
 ?>

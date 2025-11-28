@@ -70,7 +70,6 @@ declare(strict_types=1);
 class tacview
 {
 	private const SHORT_SORTIE_THRESHOLD = 120.0;
-
 	public array $language = [];
 	public string $htmlOutput = "";
 
@@ -106,6 +105,7 @@ class tacview
 	public array $stats = [];
 	public array $weaponOwners = []; // Track weapon ID -> pilot who fired it
 	public string $missionName = "";
+	public string $author = "";
 	public mixed $xmlParser = null; // XMLParser object in PHP 8+
 	public string $currentData = "";
 	public bool $tagObjectsOpened = false;
@@ -118,6 +118,9 @@ class tacview
 	public mixed $firephp = null;
 	private bool $hasConfidenceMetrics = false;
 	private int $sourceCount = 0;
+	private array $sourceTimeline = [];
+	private ?float $timelineStart = null;
+	private ?float $timelineDuration = null;
 	// we log today’s date as an example. you could log whatever variable you want to
 
 	//
@@ -478,7 +481,7 @@ class tacview
 		$this->renderPreparedEventsFromState();
 	}
 
-	public function proceedAggregatedStats(string $missionName, float $startTime, float $duration, array $events, int $sourceCount = 0): void
+	public function proceedAggregatedStats(string $missionName, float $startTime, float $duration, array $events, int $sourceCount = 0, array $sourceDetails = []): void
 	{
 		$this->resetRuntimeState();
 		$this->missionName = $missionName;
@@ -486,6 +489,7 @@ class tacview
 		$this->duration = $duration;
 		$this->events = $events;
 		$this->sourceCount = max(0, $sourceCount);
+		$this->sourceTimeline = $this->buildSourceTimeline($sourceDetails);
 
 		$this->renderPreparedEventsFromState();
 	}
@@ -507,29 +511,29 @@ class tacview
 
 		// pilot detail toggles
 
-		$this->addOutput('<script type="text/javascript">' . "\n");
-		$this->addOutput('function showDetails(zoneAffiche, rowElement){' . "\n");
-		$this->addOutput('	var detailRow = document.getElementById(zoneAffiche);' . "\n");
-		$this->addOutput('	if(!detailRow){' . "\n");
-		$this->addOutput('		return false;' . "\n");
-		$this->addOutput('	}' . "\n");
-		$this->addOutput('	var pilotRow = rowElement || (typeof event !== "undefined" ? event.currentTarget : null);' . "\n");
-		$this->addOutput('	if(!pilotRow){' . "\n");
-		$this->addOutput('		return false;' . "\n");
-		$this->addOutput('	}' . "\n");
-		$this->addOutput('	var isHidden = window.getComputedStyle(detailRow).display === "none";' . "\n");
-		$this->addOutput('	document.querySelectorAll("tr.hiddenRow").forEach(function(row){ row.style.display="none"; });' . "\n");
-		$this->addOutput('	document.querySelectorAll("tr.statisticsTable").forEach(function(row){ row.classList.remove("active-pilot"); });' . "\n");
-		$this->addOutput('	if(isHidden){' . "\n");
-		$this->addOutput('		detailRow.style.display="table-row";' . "\n");
-		$this->addOutput('		pilotRow.classList.add("active-pilot");' . "\n");
-		$this->addOutput('	}else{' . "\n");
-		$this->addOutput('		detailRow.style.display="none";' . "\n");
-		$this->addOutput('		pilotRow.classList.remove("active-pilot");' . "\n");
-		$this->addOutput('	}' . "\n");
-		$this->addOutput('	return false;' . "\n");
-		$this->addOutput('}' . "\n");
-		$this->addOutput('</script>' . "\n");
+		$this->addOutput('<script type="text/javascript">');
+		$this->addOutput('function showDetails(zoneAffiche, rowElement){');
+		$this->addOutput('	var detailRow = document.getElementById(zoneAffiche);');
+		$this->addOutput('	if(!detailRow){');
+		$this->addOutput('		return false;');
+		$this->addOutput('	}');
+		$this->addOutput('	var pilotRow = rowElement || (typeof event !== "undefined" ? event.currentTarget : null);');
+		$this->addOutput('	if(!pilotRow){');
+		$this->addOutput('		return false;');
+		$this->addOutput('	}');
+		$this->addOutput('	var isHidden = window.getComputedStyle(detailRow).display === "none";');
+		$this->addOutput('	document.querySelectorAll("tr.hiddenRow").forEach(function(row){ row.style.display="none"; });');
+		$this->addOutput('	document.querySelectorAll("tr.statisticsTable").forEach(function(row){ row.classList.remove("active-pilot"); });');
+		$this->addOutput('	if(isHidden){');
+		$this->addOutput('		detailRow.style.display="table-row";');
+		$this->addOutput('		pilotRow.classList.add("active-pilot");');
+		$this->addOutput('	}else{');
+		$this->addOutput('		detailRow.style.display="none";');
+		$this->addOutput('		pilotRow.classList.remove("active-pilot");');
+		$this->addOutput('	}');
+		$this->addOutput('	return false;');
+		$this->addOutput('}');
+		$this->addOutput('</script>');
 
 		// ***********************************************************
 		// PRESENTATION TABLE - Mission Name, Time, Duration
@@ -549,13 +553,16 @@ class tacview
 		$this->addOutput('<td class="presentationTable">' . $this->L('missionDuration') . ':</td>');
 		$this->addOutput('<td class="presentationTable">' . $this->displayTime($this->duration) . '</td>');
 		$this->addOutput('</tr>');
-		if ($this->sourceCount > 0) {
+		if ($this->sourceCount > 0)
+		{
 			$this->addOutput('<tr class="presentationTable">');
 			$this->addOutput('<td class="presentationTable">' . $this->L('sources') . ':</td>');
 			$this->addOutput('<td class="presentationTable">' . number_format($this->sourceCount) . '</td>');
 			$this->addOutput('</tr>');
 		}
 		$this->addOutput('</table>');
+
+		$this->renderSourceTimeline();
 
 		// ***********************************************************
 		// Iterate through events
@@ -771,34 +778,42 @@ class tacview
 
 					if ($shouldSkipKillAttribution)
 					{
-						break;
+						// Defer final decision until we know if a killer can be identified
 					}
 
 					$this->increaseStat($this->stats[$primaryObjectPilot], "Destroyed", "Count");
 					
 					$secondaryObjectPilot = null;
+					$killerObject = null;
 					
 					if (	array_key_exists("SecondaryObject",$event) and
 							array_key_exists("Pilot", $event["SecondaryObject"]) 
 						)
-					{							
+					{
 						$secondaryObjectPilot = $event["SecondaryObject"]["Pilot"];
-						
+						$killerObject = $event["SecondaryObject"];
+					}
+					elseif (	array_key_exists("ParentObject", $event) and
+							array_key_exists("Pilot", $event["ParentObject"]) 
+						)
+					{
+						$secondaryObjectPilot = $event["ParentObject"]["Pilot"];
+						$killerObject = $event["ParentObject"];
+					}
+
+					if ($secondaryObjectPilot !== null)
+					{
+						$killerObject = $killerObject ?? [];
 						if (!isset($this->stats[$secondaryObjectPilot]))
 						{
-							// If Pilot of Seconday Object does not exist  yet, create them.
-
-							$this->stats[$secondaryObjectPilot]["Aircraft"] = $event["SecondaryObject"]["Name"];
-							$this->stats[$secondaryObjectPilot]["Group"]    = $event["SecondaryObject"]["Group"] ?? "";
-							$this->stats[$secondaryObjectPilot]["Type"]     = $event["SecondaryObject"]["Type"];
-
-							if (!array_key_exists("Events", $this->stats[$secondaryObjectPilot]))
-							{
-								$this->stats[$secondaryObjectPilot]["Events"] = [];
-							}
-							
+							$this->stats[$secondaryObjectPilot]["Aircraft"] = $killerObject["Name"] ?? "";
+							$this->stats[$secondaryObjectPilot]["Group"]    = $killerObject["Group"] ?? "";
+							$this->stats[$secondaryObjectPilot]["Type"]     = $killerObject["Type"] ?? "Aircraft";
 						}
-						
+						if (!array_key_exists("Events", $this->stats[$secondaryObjectPilot]))
+						{
+							$this->stats[$secondaryObjectPilot]["Events"] = [];
+						}
 						array_push($this->stats[$secondaryObjectPilot]["Events"], $event);
 					}
 					else
@@ -833,11 +848,11 @@ class tacview
 										$this->stats[$secondaryObjectPilot]["Aircraft"] = $weaponOwner['aircraft'];
 										$this->stats[$secondaryObjectPilot]["Group"]    = $weaponOwner['group'];
 										$this->stats[$secondaryObjectPilot]["Type"]     = $weaponOwner['type'];
+									}
 
-										if (!array_key_exists("Events", $this->stats[$secondaryObjectPilot]))
-										{
-											$this->stats[$secondaryObjectPilot]["Events"] = [];
-										}
+									if (!array_key_exists("Events", $this->stats[$secondaryObjectPilot]))
+									{
+										$this->stats[$secondaryObjectPilot]["Events"] = [];
 									}
 									
 									// Add event to killer's record
@@ -847,12 +862,18 @@ class tacview
 							}
 						}
 						
-						// If still no killer found, skip this kill attribution
-						if ($secondaryObjectPilot === null)
+					}						
+
+					// If still no killer found, decide whether to skip due to disconnect attribution
+					if ($secondaryObjectPilot === null)
+					{
+						if ($shouldSkipKillAttribution)
 						{
-							continue 2;
+							break;
 						}
-					}							
+
+						continue 2;
+					}
 						
 					if (!array_key_exists("Killed", $this->stats[$secondaryObjectPilot]))
 					{
@@ -860,7 +881,7 @@ class tacview
 					}
 
 					$this->increaseStat($this->stats[$secondaryObjectPilot]["Killed"], $event["PrimaryObject"]["Type"], "Count"); 
-					$this->increaseStat($this->stats[$secondaryObjectPilot]["Killed"], $event["PrimaryObject"]["Type"], $event["PrimaryObject"]["Name"]);						break;
+					$this->increaseStat($this->stats[$secondaryObjectPilot]["Killed"], $event["PrimaryObject"]["Type"], $event["PrimaryObject"]["Name"]);					break;
 
 					case "HasBeenHitBy":
 
@@ -979,36 +1000,47 @@ class tacview
 
 						case "HasBeenDestroyed":
 
+							$secondaryObjectPilot = null;
+							$killerObject = null;
+
 							if 	(	array_key_exists("SecondaryObject",$event) and
-									array_key_exists("Pilot", $event["SecondaryObject"])
+									array_key_exists("Pilot", $event["SecondaryObject"]) 
 								)
 							{
 								$secondaryObjectPilot = $event["SecondaryObject"]["Pilot"];
-
-								if (!isset($this->stats[$secondaryObjectPilot]))
-								{
-									// If Pilot of Secondary Object does not exist yet, create them.
-
-									$this->stats[$secondaryObjectPilot]["Aircraft"] = $event["SecondaryObject"]["Name"];
-									$this->stats[$secondaryObjectPilot]["Group"]    = $event["SecondaryObject"]["Group"] ?? "";
-									$this->stats[$secondaryObjectPilot]["Type"]     = $event["SecondaryObject"]["Type"];
-
-									if (!array_key_exists("Events", $this->stats[$secondaryObjectPilot]))
-									{
-										$this->stats[$secondaryObjectPilot]["Events"] = [];
-									}
-								}
-
-								array_push($this->stats[$secondaryObjectPilot]["Events"], $event);
+								$killerObject = $event["SecondaryObject"];
 							}
-							else
+							elseif (	array_key_exists("ParentObject", $event) and
+									array_key_exists("Pilot", $event["ParentObject"]) 
+								)
+							{
+								$secondaryObjectPilot = $event["ParentObject"]["Pilot"];
+								$killerObject = $event["ParentObject"];
+							}
+
+							if ($secondaryObjectPilot === null)
 							{
 								continue 2;
 							}
 
-							if (!array_key_exists("Killed", $this->stats[$event["SecondaryObject"]["Pilot"]]))
+							$killerObject = $killerObject ?? [];
+							if (!isset($this->stats[$secondaryObjectPilot]))
 							{
-								$this->stats[$event["SecondaryObject"]["Pilot"]]["Killed"] = [];
+								$this->stats[$secondaryObjectPilot]["Aircraft"] = $killerObject["Name"] ?? "";
+								$this->stats[$secondaryObjectPilot]["Group"]    = $killerObject["Group"] ?? "";
+								$this->stats[$secondaryObjectPilot]["Type"]     = $killerObject["Type"] ?? "Aircraft";
+							}
+
+							if (!array_key_exists("Events", $this->stats[$secondaryObjectPilot]))
+							{
+								$this->stats[$secondaryObjectPilot]["Events"] = [];
+							}
+
+							array_push($this->stats[$secondaryObjectPilot]["Events"], $event);
+
+							if (!array_key_exists("Killed", $this->stats[$secondaryObjectPilot]))
+							{
+								$this->stats[$secondaryObjectPilot]["Killed"] = [];
 							}
 
 							$this->increaseStat($this->stats[$secondaryObjectPilot]["Killed"], $event["PrimaryObject"]["Type"], "Count");
@@ -1618,10 +1650,11 @@ class tacview
 			$lmsg = $lmsg . "(" . $event["PrimaryObject"]["Pilot"] . ")";
 		}
 
-		if($groupExists)
+		if ($groupExists)
 		{
 
-			$lmsg = $lmsg . " [" . $event["PrimaryObject"]["Group"] ?? "" . "] ";	// ADDED Group in Event by Aikanaro
+			$groupName = (string) ($event["PrimaryObject"]["Group"] ?? "");
+			$lmsg .= ' [' . $groupName . '] ';	// ADDED Group in Event by Aikanaro
 		}
 
 		$this->addOutput($lmsg . $this->L($event["Action"]) . " ");
@@ -1879,6 +1912,7 @@ class tacview
 		$this->stats = [];
 		$this->weaponOwners = [];
 		$this->missionName = "";
+		$this->author = "";
 		$this->xmlParser = null;
 		$this->currentData = "";
 		$this->tagObjectsOpened = false;
@@ -1888,6 +1922,10 @@ class tacview
 		$this->startTime = 0.0;
 		$this->duration = 0.0;
 		$this->hasConfidenceMetrics = false;
+		$this->sourceCount = 0;
+		$this->sourceTimeline = [];
+		$this->timelineStart = null;
+		$this->timelineDuration = null;
 	}
 
 	/**
@@ -2233,6 +2271,469 @@ class tacview
 		return array_values($normalized);
 	}
 
+	private function renderSourceTimeline(): void
+	{
+		if ($this->sourceTimeline === [])
+		{
+			return;
+		}
+
+		$missionStart = $this->timelineStart ?? (is_numeric($this->startTime) ? (float)$this->startTime : null);
+		$missionDuration = $this->timelineDuration ?? (is_numeric($this->duration) ? (float)$this->duration : null);
+		if ($missionStart === null || $missionDuration === null || $missionDuration <= 0.0)
+		{
+			return;
+		}
+		$missionStartLabel = $this->displayTime($missionStart);
+		$missionEndLabel = $this->displayTime($missionStart + $missionDuration);
+
+		$this->addOutput('<div class="mission-timeline-panel">');
+		$this->addOutput('<h2>' . $this->L('sourceTimelineHeading') . '</h2>');
+		$this->addOutput('<div class="mission-timeline__axis">');
+		$this->addOutput('<span>' . $missionStartLabel . '</span>');
+		$this->addOutput('<span>' . $missionEndLabel . '</span>');
+		$this->addOutput('</div>');
+
+		$ticks = $this->buildTimelineTicks($missionStart, $missionDuration);
+		$this->addOutput('<div class="mission-timeline__coreline">');
+		foreach ($ticks as $tick)
+		{
+			$tickClass = 'mission-timeline__tick';
+			if ($tick['major'])
+			{
+				$tickClass .= ' mission-timeline__tick--major';
+			}
+			$labelAttr = htmlspecialchars($tick['label'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+			$this->addOutput('<span class="' . $tickClass . '" style="left:' . $tick['position'] . '%;" data-label="' . $labelAttr . '"></span>');
+			if ($tick['major'])
+			{
+				$this->addOutput('<span class="mission-timeline__tickLabel" style="left:' . $tick['position'] . '%;">' . $labelAttr . '</span>');
+			}
+		}
+		$this->addOutput('</div>');
+
+		foreach ($this->sourceTimeline as $row)
+		{
+			$barClass = 'mission-timeline__bar';
+			if (!empty($row['baseline']))
+			{
+				$barClass .= ' mission-timeline__bar--baseline';
+			}
+
+			$tooltipParts = [];
+			$tooltipParts[] = $row['timelineLabel'];
+			$tooltipParts[] = $row['coverageLabel'];
+			if (($row['events'] ?? 0) > 0)
+			{
+				$tooltipParts[] = 'Events: ' . number_format((int)$row['events']);
+			}
+			if (($row['offsetLabel'] ?? '') !== '')
+			{
+				$tooltipParts[] = $row['offsetLabel'];
+			}
+			if (($row['reliabilityLabel'] ?? '') !== '')
+			{
+				$tooltipParts[] = $row['reliabilityLabel'];
+			}
+			if (($row['confidenceLabel'] ?? '') !== '')
+			{
+				$tooltipParts[] = $row['confidenceLabel'];
+			}
+			if (($row['coveragePercentLabel'] ?? '') !== '')
+			{
+				$tooltipParts[] = $row['coveragePercentLabel'];
+			}
+			if (($row['coalition'] ?? '') !== '')
+			{
+				$tooltipParts[] = 'Coalition: ' . $row['coalition'];
+			}
+			$tooltip = htmlspecialchars(implode(' • ', $tooltipParts), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+			$this->addOutput('<div class="mission-timeline__row">');
+			$this->addOutput('<div class="mission-timeline__label">' . htmlspecialchars((string)$row['label'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</div>');
+			$this->addOutput('<div class="mission-timeline__track">');
+			$this->addOutput('<div class="' . $barClass . '" style="left:' . (float)$row['leftPercent'] . '%;width:' . (float)$row['widthPercent'] . '%;" data-tooltip="' . $tooltip . '">');
+			$this->addOutput('<span class="mission-timeline__barText">' . htmlspecialchars((string)$row['coverageLabel'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</span>');
+			$this->addOutput('</div>');
+			$this->addOutput('</div>');
+			$this->addOutput('</div>');
+		}
+
+		$this->addOutput('<div class="mission-timeline__legend">');
+		$this->addOutput('<span><span class="mission-timeline__key mission-timeline__key--baseline"></span>' . $this->L('sourceTimelineBaseline') . '</span>');
+		$this->addOutput('<span><span class="mission-timeline__key"></span>' . $this->L('sourceTimelineAligned') . '</span>');
+		$this->addOutput('</div>');
+		$this->addOutput('</div>');
+	}
+
+	/**
+	 * @param array<int, array<string, mixed>> $sources
+	 * @return array<int, array<string, mixed>>
+	 */
+	private function buildSourceTimeline(array $sources): array
+	{
+		$this->timelineStart = null;
+		$this->timelineDuration = null;
+
+		if ($sources === [])
+		{
+			return [];
+		}
+
+		$bounds = $this->computeTimelineBoundsFromSources($sources);
+		if ($bounds === null)
+		{
+			if (!is_numeric($this->startTime) || !is_numeric($this->duration) || (float)$this->duration <= 0.0)
+			{
+				return [];
+			}
+			$timelineStart = (float)$this->startTime;
+			$timelineEnd = $timelineStart + (float)$this->duration;
+		}
+		else
+		{
+			[$timelineStart, $timelineEnd] = $bounds;
+		}
+
+		$timelineDuration = max(1.0, $timelineEnd - $timelineStart);
+		$this->timelineStart = $timelineStart;
+		$this->timelineDuration = $timelineDuration;
+
+		$timeline = [];
+		$index = 0;
+
+		foreach ($sources as $source)
+		{
+			if (!is_array($source))
+			{
+				continue;
+			}
+
+			$index++;
+			$label = $this->resolveSourceLabel($source, $index);
+			[$windowStart, $windowEnd] = $this->resolveTimelineWindow($source, $timelineStart, $timelineEnd);
+			if ($windowStart === null && $windowEnd === null)
+			{
+				continue;
+			}
+
+			if ($windowStart === null)
+			{
+				$windowStart = $timelineStart;
+			}
+			if ($windowEnd === null || $windowEnd < $windowStart)
+			{
+				$windowEnd = $windowStart;
+			}
+
+			$relativeStart = $windowStart - $timelineStart;
+			$relativeEnd = $windowEnd - $timelineStart;
+
+			if ($relativeEnd <= 0.0 || $relativeStart >= $timelineDuration)
+			{
+				continue;
+			}
+
+			$clampedStart = max(0.0, $relativeStart);
+			$clampedEnd = min($timelineDuration, $relativeEnd);
+			$visibleDuration = max(1.0, $clampedEnd - $clampedStart);
+
+			$leftPercent = ($clampedStart / $timelineDuration) * 100.0;
+			$widthPercent = ($visibleDuration / $timelineDuration) * 100.0;
+			$widthPercent = min(100.0 - $leftPercent, max(1.5, $widthPercent));
+
+			$timeline[] = [
+				'label' => $label,
+				'timelineLabel' => sprintf('%s – %s', $this->displayTime($timelineStart + $clampedStart), $this->displayTime($timelineStart + $clampedEnd)),
+				'coverageLabel' => $this->formatDurationLabel($visibleDuration),
+				'events' => isset($source['events']) ? (int)$source['events'] : 0,
+				'offsetLabel' => $this->formatOffsetLabel($source),
+				'reliabilityLabel' => $this->formatReliabilityLabel($source['reliability'] ?? null),
+				'confidenceLabel' => $this->formatConfidenceLabel($source['alignmentConfidence'] ?? null),
+				'coveragePercentLabel' => $this->formatCoveragePercentLabel($source['coveragePercent'] ?? null),
+				'coalition' => isset($source['dominantCoalition']) ? (string)$source['dominantCoalition'] : '',
+				'baseline' => !empty($source['baseline']),
+				'leftPercent' => round($leftPercent, 2),
+				'widthPercent' => round($widthPercent, 2),
+			];
+		}
+
+		return $timeline;
+	}
+
+	/**
+	 * @param array<string, mixed> $source
+	 */
+	private function resolveSourceLabel(array $source, int $index): string
+	{
+		$rawLabel = null;
+		if (isset($source['author']))
+		{
+			$authorLabel = trim((string)$source['author']);
+			if ($authorLabel !== '')
+			{
+				$rawLabel = $authorLabel;
+			}
+		}
+
+		if ($rawLabel === null)
+		{
+			$rawLabel = (string)($source['missionName'] ?? $source['filename'] ?? $source['id'] ?? ('Source ' . $index));
+		}
+
+		return $this->sanitizeSourceLabel($rawLabel);
+	}
+
+	/**
+	 * @param array<string, mixed> $source
+	 * @return array{0: ?float, 1: ?float}
+	 */
+	private function resolveTimelineWindow(array $source, float $timelineStart, float $timelineEnd): array
+	{
+		$alignedStart = $this->extractNumericField($source, ['alignedStartTime']);
+		$alignedEnd = $this->extractNumericField($source, ['alignedEndTime']);
+		$alignedDuration = $this->extractNumericField($source, ['alignedDuration']);
+
+		$rawStart = $alignedStart !== null ? null : $this->extractNumericField($source, ['startTime']);
+		$rawDuration = $alignedDuration !== null ? null : $this->extractNumericField($source, ['duration']);
+
+		$start = $alignedStart ?? $rawStart;
+		$duration = $alignedDuration ?? $rawDuration;
+		$end = $alignedEnd;
+
+		if ($start !== null && $duration !== null && $end === null)
+		{
+			$end = $start + $duration;
+		}
+		if ($end !== null && $duration !== null && $start === null)
+		{
+			$start = $end - $duration;
+		}
+
+		if ($start === null && $end === null)
+		{
+			return [null, null];
+		}
+
+		if ($start === null)
+		{
+			$start = $timelineStart;
+		}
+		if ($end === null)
+		{
+			$end = $timelineEnd;
+		}
+
+		return [$start, max($start, $end)];
+	}
+
+	/**
+	 * @param array<int, array<string, mixed>> $sources
+	 * @return array{0: float, 1: float}|null
+	 */
+	private function computeTimelineBoundsFromSources(array $sources): ?array
+	{
+		$minStart = null;
+		$maxEnd = null;
+
+		foreach ($sources as $source)
+		{
+			if (!is_array($source))
+			{
+				continue;
+			}
+
+			$start = $this->extractNumericField($source, ['alignedStartTime']);
+			$end = $this->extractNumericField($source, ['alignedEndTime']);
+			$duration = $this->extractNumericField($source, ['alignedDuration']);
+
+			if ($start !== null && $end === null && $duration !== null)
+			{
+				$end = $start + $duration;
+			}
+			if ($end !== null && $start === null && $duration !== null)
+			{
+				$start = $end - $duration;
+			}
+
+			if ($start !== null)
+			{
+				$minStart = $minStart === null ? $start : min($minStart, $start);
+			}
+			if ($end !== null)
+			{
+				$maxEnd = $maxEnd === null ? $end : max($maxEnd, $end);
+			}
+		}
+
+		if ($minStart === null || $maxEnd === null || $maxEnd <= $minStart)
+		{
+			return null;
+		}
+
+		return [$minStart, $maxEnd];
+	}
+
+	/**
+	 * @param array<string, mixed> $source
+	 * @param array<int, string> $keys
+	 */
+	private function extractNumericField(array $source, array $keys): ?float
+	{
+		foreach ($keys as $key)
+		{
+			if (isset($source[$key]) && is_numeric($source[$key]))
+			{
+				return (float)$source[$key];
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * @return array<int, array{position: float, label: string, major: bool}>
+	 */
+	private function buildTimelineTicks(float $missionStart, float $missionDuration): array
+	{
+		if ($missionDuration <= 0.0)
+		{
+			return [];
+		}
+
+		$baseStep = 300.0; // 5 minutes
+		$maxTicks = 72.0;
+		$step = $baseStep;
+		while (($missionDuration / $step) > $maxTicks)
+		{
+			$step += $baseStep;
+		}
+		$majorStep = 900.0; // lock majors to quarter-hour marks
+
+		$timelineStart = $missionStart;
+		$timelineEnd = $missionStart + $missionDuration;
+		$firstTickTime = ceil($timelineStart / $step) * $step;
+
+		$ticks = [];
+		for ($tickTime = $firstTickTime; $tickTime < $timelineEnd; $tickTime += $step)
+		{
+			$offset = $tickTime - $timelineStart;
+			if ($offset <= 0.0 || $offset >= $missionDuration)
+			{
+				continue;
+			}
+
+			$position = ($offset / $missionDuration) * 100.0;
+			$label = $this->displayTime($tickTime);
+			$remainder = fmod($tickTime, $majorStep);
+			if ($remainder < 0.0)
+			{
+				$remainder += $majorStep;
+			}
+			$major = $majorStep > 0.0 && ($remainder < 0.01 || abs($remainder - $majorStep) < 0.01);
+
+			$ticks[] = [
+				'position' => round($position, 2),
+				'label' => $label,
+				'major' => $major,
+			];
+		}
+
+		return $ticks;
+	}
+
+	private function sanitizeSourceLabel(string $label): string
+	{
+		$label = trim($label);
+		if ($label === '')
+		{
+			return 'Source';
+		}
+
+		$label = str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $label);
+		$label = basename($label);
+
+		return $label !== '' ? $label : 'Source';
+	}
+
+	private function formatDurationLabel(float $seconds): string
+	{
+		if ($seconds <= 0.0)
+		{
+			return '00:00';
+		}
+
+		$hours = (int)floor($seconds / 3600);
+		$minutes = (int)floor(fmod($seconds, 3600.0) / 60);
+		$secs = (int)round(fmod($seconds, 60.0));
+
+		if ($hours > 0)
+		{
+			return sprintf('%02d:%02d:%02d', $hours, $minutes, $secs);
+		}
+
+		return sprintf('%02d:%02d', $minutes, $secs);
+	}
+
+	/**
+	 * @param array<string, mixed> $source
+	 */
+	private function formatOffsetLabel(array $source): string
+	{
+		if (!isset($source['offset']) || !is_numeric($source['offset']))
+		{
+			return '';
+		}
+
+		$offset = (float)$source['offset'];
+		$strategy = isset($source['offsetStrategy']) ? (string)$source['offsetStrategy'] : '';
+		$label = sprintf('Offset %+.2fs', $offset);
+		if ($strategy !== '')
+		{
+			$label .= ' (' . $strategy . ')';
+		}
+
+		return $label;
+	}
+
+	private function formatReliabilityLabel(mixed $value): string
+	{
+		if (!is_numeric($value))
+		{
+			return '';
+		}
+
+		$percent = (float)$value * 100.0;
+		$percent = max(0.0, min(100.0, $percent));
+
+		return 'Reliability ' . round($percent) . '%';
+	}
+
+	private function formatConfidenceLabel(mixed $value): string
+	{
+		if (!is_numeric($value))
+		{
+			return '';
+		}
+
+		$percent = (float)$value * 100.0;
+		$percent = max(0.0, min(100.0, $percent));
+
+		return 'Alignment Confidence ' . round($percent) . '%';
+	}
+
+	private function formatCoveragePercentLabel(mixed $value): string
+	{
+		if (!is_numeric($value))
+		{
+			return '';
+		}
+
+		$percent = max(0.0, min(100.0, (float)$value));
+
+		return 'Coverage ' . round($percent, 1) . '%';
+	}
+
 	public function cdata(mixed $aParser, string $aData): void
 	{
 
@@ -2247,6 +2748,11 @@ class tacview
 		if ($aName == "Title")
 		{
 			$this->missionName = $this->currentData;
+		}
+
+		if ($aName == "Author")
+		{
+			$this->author = $this->currentData;
 		}
 
 		if ($aName == "Duration")

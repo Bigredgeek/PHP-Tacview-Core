@@ -43,7 +43,7 @@ declare(strict_types=1);
 	$_LANGUAGE['teamKill'] = 'Prijateljska paljba';
 	$_LANGUAGE['hit'] = 'Pogođen';
 	$_LANGUAGE['hitTaken'] = 'Primljeni pogoci';
-	$_LANGUAGE['destroyed'] = 'Uništen';
+	$_LANGUAGE['destroyed'] = 'Izgubljeni zrakoplovi';
 	$_LANGUAGE['hitBy'] = 'POgođen od';
 	$_LANGUAGE['nothing'] = '-ništa-';
 	$_LANGUAGE['ObjectShell'] = 'shell';
@@ -52,4 +52,7 @@ declare(strict_types=1);
 	$_LANGUAGE['model'] = 'Model';
 	$_LANGUAGE['confidence'] = 'Pouzdanost';
 	$_LANGUAGE['sources'] = 'Izvori';
+	$_LANGUAGE['sourceTimelineHeading'] = 'Mission Timeline';
+	$_LANGUAGE['sourceTimelineBaseline'] = 'Baseline source';
+	$_LANGUAGE['sourceTimelineAligned'] = 'Aligned recording';
 ?>

@@ -7,14 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed - 2025-11-27
+- Synced `tacview.css` with the Song of the Nibelungs Cold War command-center theme (commit `a10b8cb`) so downstream deployments stop inheriting the Brownwater neon palette.
+
 ### Fixed - 2025-11-06
 - Restored the compact newline-delimited `showDetails` inline script so consuming projects that embed the shared core no longer ship the verbose debug helper that triggers `Unexpected end of input` errors when Vercel truncates the minified output.
 
 ### Fixed - 2025-11-03
 - Suppressed duplicate mission log rows for pilots that performed takeoff/landing cycles under two minutes with no intervening actions by introducing `deduplicateShortFlightSegments()` and matching airport checks during event normalization.
+- Restored bracket closures and spacing between flight group names and mission actions so event rows read `[Axeman 3] has entered the area` instead of collapsing the strings.
 
 ### Changed - 2025-11-03
 - Renamed the pilot statistics "Targets Destroyed" column to "Airframes Lost" and synced the wording across English, Russian, and Ukrainian language packs so airframe loss totals read consistently in every UI bundle.
+- Replaced the verbose `showDetails` toggle script with a lightweight version that removes console spam and safely ignores missing DOM targets.
 
 ### Added - 2025-11-04
 - Added MQ-1 Predator, SA 342L Gazelle, MiG-27K Flogger-J2, and Wing Loong I icon entries (with licensing metadata) to the manifest, normalized their 640x360 thumbnails, and taught the auto-curation script the new airframe aliases to keep automated fetches comprehensive.

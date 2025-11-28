@@ -43,7 +43,7 @@ declare(strict_types=1);
 	$_LANGUAGE['teamKill'] = 'Fuoco Amico';
 	$_LANGUAGE['hit'] = 'Colpito';
 	$_LANGUAGE['hitTaken'] = 'Colpi subiti';
-	$_LANGUAGE['destroyed'] = 'Distrutto';
+	$_LANGUAGE['destroyed'] = 'Velivoli persi';
 	$_LANGUAGE['hitBy'] = 'Colpito da';
 	$_LANGUAGE['nothing'] = '0';
 	$_LANGUAGE['ObjectShell'] = 'scheggia';
@@ -52,5 +52,8 @@ declare(strict_types=1);
 	$_LANGUAGE['model'] = 'Modello'; // ADDED by Aikanaro
 	$_LANGUAGE['confidence'] = 'Affidabilità';
 	$_LANGUAGE['sources'] = 'Fonti';
+	$_LANGUAGE['sourceTimelineHeading'] = 'Mission Timeline';
+	$_LANGUAGE['sourceTimelineBaseline'] = 'Baseline source';
+	$_LANGUAGE['sourceTimelineAligned'] = 'Aligned recording';
 
 ?>

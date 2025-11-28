@@ -43,7 +43,7 @@ declare(strict_types=1);
 	$_LANGUAGE['teamKill'] = 'Team kill';
 	$_LANGUAGE['hit'] = 'Touché';
 	$_LANGUAGE['hitTaken'] = 'Coups reçus';
-	$_LANGUAGE['destroyed'] = 'Détruits';
+	$_LANGUAGE['destroyed'] = 'Aéronefs perdus';
 	$_LANGUAGE['hitBy'] = 'Touché par';
 	$_LANGUAGE['nothing'] = 'rien';
 	$_LANGUAGE['ObjectShell'] = 'obus';
@@ -52,5 +52,8 @@ declare(strict_types=1);
 	$_LANGUAGE['group'] = 'Groupe';
 	$_LANGUAGE['confidence'] = 'Confiance';
 	$_LANGUAGE['sources'] = 'Sources';
+	$_LANGUAGE['sourceTimelineHeading'] = 'Mission Timeline';
+	$_LANGUAGE['sourceTimelineBaseline'] = 'Baseline source';
+	$_LANGUAGE['sourceTimelineAligned'] = 'Aligned recording';
 
 ?>

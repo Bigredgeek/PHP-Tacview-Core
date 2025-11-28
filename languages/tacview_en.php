@@ -52,5 +52,8 @@ declare(strict_types=1);
 	$_LANGUAGE['group'] = 'Flight/Squadron';
 	$_LANGUAGE['confidence'] = 'Confidence';
 	$_LANGUAGE['sources'] = 'Sources';
+	$_LANGUAGE['sourceTimelineHeading'] = 'Mission Timeline';
+	$_LANGUAGE['sourceTimelineBaseline'] = 'Baseline source';
+	$_LANGUAGE['sourceTimelineAligned'] = 'Aligned recording';
 
 ?>

@@ -43,7 +43,7 @@ declare(strict_types=1);
 	$_LANGUAGE['teamKill'] = 'Oma tuli';
 	$_LANGUAGE['hit'] = 'Osuma';
 	$_LANGUAGE['hitTaken'] = 'Osumat vastaanotettu';
-	$_LANGUAGE['destroyed'] = 'Tuhottu';
+	$_LANGUAGE['destroyed'] = 'Menetetyt koneet';
 	$_LANGUAGE['hitBy'] = 'Osunut';
 	$_LANGUAGE['nothing'] = 'ei mitään';
 	$_LANGUAGE['ObjectShell'] = 'Kranaatti';
@@ -52,5 +52,8 @@ declare(strict_types=1);
 	$_LANGUAGE['model'] = 'Malli';
 	$_LANGUAGE['confidence'] = 'Luottamusaste';
 	$_LANGUAGE['sources'] = 'Lähteet';
+	$_LANGUAGE['sourceTimelineHeading'] = 'Mission Timeline';
+	$_LANGUAGE['sourceTimelineBaseline'] = 'Baseline source';
+	$_LANGUAGE['sourceTimelineAligned'] = 'Aligned recording';
 
 ?>
